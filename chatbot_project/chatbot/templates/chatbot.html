@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        
+        .chat-container {
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 70vh;
+            padding: 20px;
+        }
+        
+        .chatlogs {
+            overflow-y: auto;
+            flex-grow: 1;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px; /* Adjust this if needed */
+        }
+        
+        .chat-log {
+            display: flex;
+            justify-content: flex-end; /* Align user messages to the right */
+            margin-bottom: 4px; /* Reduce the gap between messages */
+        }
+        
+        .bot .chat-log {
+            justify-content: flex-start; /* Align bot messages to the left */
+        }
+        
+        .chat-log p {
+            background-color: #f1f0f0;
+            padding: 8px; /* Adjust the padding around the message */
+            border-radius: 8px;
+            max-width: 70%;
+            margin: 0; /* Remove default margin */
+        }
+        
+        .user .chat-log p {
+            background-color: #007bff;
+            color: white;
+            align-self: flex-end;
+        }
+        
+        .bot .chat-log p {
+            background-color: #e5e5ea;
+        }
+        
+        .chat-input-container {
+            display: flex;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .chat-input {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+            outline: none; /* Remove focus border */
+        }
+        
+        .chat-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .chat-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    
+</head>
+<body>
+    <div class="chat-container">
+        <u style="color: #007bff"><h3><b>ChatBot</b></h3></u>
+        <hr>
+        <div class="chatlogs" id="chatlogs">
+            <!-- Chat messages will be appended here -->
+        </div>
+        
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="query" placeholder="Type your message...">
+            <button class="chat-btn" id="send">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                    <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                  </svg>
+                Send
+            </button>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#send').click(function() {
+                sendMessage();
+            });
+        
+            $('#query').keypress(function(event) {
+                if (event.keyCode === 13 || event.which === 13) {
+                    sendMessage();
+                }
+            });
+        
+            function sendMessage() {
+                var query = $('#query').val().trim();
+                if (query === '') return;
+            
+                appendMessage('user', query);
+            
+                $('#query').val('');
+            
+                $.post('/chat/', { query: query }, function(data) {
+                    var response = data.response || "No response from server";
+            
+                    setTimeout(function() {
+                        appendMessage('bot', response);
+                    }, 1000); // delay for the 1 second
+                })
+                .fail(function() {
+                    appendMessage('bot', "Error: Failed to communicate with server.");
+                });
+            }
+        
+            function appendMessage(sender, message) {
+                var chatlogs = $('#chatlogs');
+                var className = (sender === 'user') ? 'user' : 'bot';
+                var chatLogElement = '<div class="chat-log ' + className + '"><p><strong>' + sender.capitalize() + ':</strong> ' + message + '</p></div>';
+                chatlogs.append(chatLogElement);
+                chatlogs.scrollTop(chatlogs[0].scrollHeight);
+            }
+        
+            String.prototype.capitalize = function() {
+                return this.charAt(0).toUpperCase() + this.slice(1);
+            };
+        });
+    </script>
+</body>
+</html>
+    
